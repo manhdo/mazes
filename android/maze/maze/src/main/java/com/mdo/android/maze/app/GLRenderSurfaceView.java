@@ -74,7 +74,6 @@ public class GLRenderSurfaceView extends GLSurfaceView {
 		public void onDrawFrame(GL10 gl) {
 			gl.glClearColor(mRed, mGreen, mBlue, 1.0f);
 			gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
-
 		}
 
 		public void setColor(float r, float g, float b) {

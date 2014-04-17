@@ -17,6 +17,7 @@ public class MainActivity extends Activity {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		startRenderView();
+		//startGLRenderView();
     }
 
 	private void startGLRenderView() {
@@ -35,7 +36,10 @@ public class MainActivity extends Activity {
 		super.onResume();
 		//glRenderView.resume();
 		if (renderView != null) {
-			renderView.resume();
+			//renderView.resume();
+		}
+		if (glRenderView != null) {
+			glRenderView.onResume();
 		}
 	}
 
@@ -43,7 +47,10 @@ public class MainActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 		if (renderView != null) {
-			renderView.pause();
+			//renderView.pause();
+		}
+		if (glRenderView != null) {
+			glRenderView.onPause();
 		}
 	}
 

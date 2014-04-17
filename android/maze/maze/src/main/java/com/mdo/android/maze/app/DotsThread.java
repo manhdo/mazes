@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.view.SurfaceHolder;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * The DotsThread object.
@@ -16,11 +17,11 @@ import java.util.ArrayList;
 public class DotsThread extends Thread {
 	private int mCanvasWidth;
 	private int mCanvasHeight;
-	private ArrayList<Dot> Dots= new ArrayList<Dot>(); // Dynamic array with dots
+	private ArrayList<Dot> dots = new ArrayList<Dot>(); // Dynamic array with dots
 	private SurfaceHolder holder;
 	private boolean running = false;
 	private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-	private final int refresh_rate=100;      // How often we update the screen, in ms
+	private final int refresh_rate=50;      // How often we update the screen, in ms
 
 	public DotsThread(SurfaceHolder holder) {
 		this.holder = holder;
@@ -34,7 +35,7 @@ public class DotsThread extends Thread {
 		previousTime = System.currentTimeMillis();
 		Canvas canvas = null;
 		int upperBound = 100;
-		while(running && Dots.size() < upperBound) {
+		while(running && dots.size() < upperBound) {
 			// Look if time has past
 			currentTime=System.currentTimeMillis();
 			while ((currentTime-previousTime)<refresh_rate){
@@ -49,26 +50,35 @@ public class DotsThread extends Thread {
 			color[1]=1;
 			color[2]=1;
 			Dot mdot=new Dot(x,y,radius,Color.HSVToColor(128,color));
-			Dots.add(mdot);
+			dots.add(mdot);
 			// PAINT
-			try {
-				canvas = holder.lockCanvas();
-				synchronized (holder) {
-					draw(canvas);
-				}
+			paint(canvas);
+		}
+
+		// continue animating
+		while (running) {
+			paint(canvas);
+		}
+	}
+
+	private void paint(Canvas canvas) {
+		try {
+			canvas = holder.lockCanvas();
+			synchronized (holder) {
+				draw(canvas);
 			}
-			finally {
-				if (canvas != null) {
-					holder.unlockCanvasAndPost(canvas);
-				}
+		}
+		finally {
+			if (canvas != null) {
+				holder.unlockCanvasAndPost(canvas);
 			}
-			// WAIT
-			try {
-				Thread.sleep(refresh_rate-5); // Wait some time till I need to display again
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		}
+		// WAIT
+		try {
+			Thread.sleep(refresh_rate-5); // Wait some time till I need to display again
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
@@ -78,13 +88,15 @@ public class DotsThread extends Thread {
 		Dot temp_dot;
 		canvas.drawColor(Color.BLACK);
 		paint.setStyle(Paint.Style.FILL_AND_STROKE);
-		for (int i=0;i<Dots.size();i++){
-			temp_dot=Dots.get(i);
+		for (int i=0;i< dots.size();i++){
+			temp_dot= dots.get(i);
 			paint.setColor(temp_dot.get_color());
 			canvas.drawCircle((float)temp_dot.get_x(),
 					(float)temp_dot.get_y(),
 					(float)temp_dot.get_radius(),
 					paint);
+			temp_dot.move();
+
 		}
 	}
 
@@ -101,12 +113,21 @@ public class DotsThread extends Thread {
 
 	private class Dot{
 		private int x,y,radius,color;
+		private int xdirection;
+		private int ydirection;
+		private int speed;
+
 
 		Dot(int x, int y, int radius, int color){
 			this.x=x;
 			this.y=y;
 			this.radius=radius;
 			this.color=color;
+
+			Random rand = new Random();
+			xdirection = rand.nextBoolean()? -1 : 1;
+			ydirection = rand.nextBoolean() ? -1 : 1;
+			speed = rand.nextInt(5)+5;
 		}
 
 		public int get_x(){
@@ -123,6 +144,20 @@ public class DotsThread extends Thread {
 
 		public int get_color(){
 			return this.color;
+		}
+
+		public void move() {
+			x+= xdirection*speed;
+			y+= ydirection*speed;
+
+			if (x < 0 || x > mCanvasWidth) {
+				xdirection*=-1;
+			}
+
+
+			if (y < 0 || y > mCanvasHeight) {
+				ydirection*=-1;
+			}
 		}
 	}
 }

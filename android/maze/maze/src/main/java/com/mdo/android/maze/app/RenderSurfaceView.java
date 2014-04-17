@@ -35,19 +35,14 @@ public class RenderSurfaceView extends SurfaceView implements SurfaceHolder.Call
 			dotsThread.setRunning(true);
 			dotsThread.setSurfaceSize(width, height);
 			dotsThread.start();
+		} else {
+			resume();
 		}
 	}
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		boolean retry = true;
-		dotsThread.setRunning(false);
-		while (retry) {
-			try {
-				dotsThread.join();
-				retry = false;
-			} catch (InterruptedException e) {}
-		}
+		pause();
 	}
 
 	public Thread getThread() {
@@ -64,6 +59,13 @@ public class RenderSurfaceView extends SurfaceView implements SurfaceHolder.Call
 	public void pause() {
 		if (dotsThread != null) {
 			dotsThread.setRunning(false);
+			boolean retry = true;
+			while (retry) {
+				try {
+					dotsThread.join();
+					retry = false;
+				} catch (InterruptedException e) {}
+			}
 		}
 	}
 }
